@@ -1,0 +1,83 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- 配置整合mybatis过程 -->
+    <!-- 1:加载用于数据库配置的属性文件-->
+
+    <!--<context:component-scan base-package="com.spring.service,com.spring.controller"/>-->
+
+
+    <!-- 3:数据库连接池 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!-- 配置连接池属性 -->
+        <property value="com.mysql.cj.jdbc.Driver" name="driverClass"/>
+        <property value="jdbc:mysql://localhost:3306/test1?characterEncoding=utf-8&amp;useSSL=false&amp;serverTimezone=GMT" name="jdbcUrl"/>
+        <property value="root" name="user"/>
+        <!--<property name="password" value="${jdbc.password}"/>-->
+
+        <!-- c3p0连接池的私有属性 -->
+        <!--连接池中保留的最大连接数。默认15-->
+        <!--<property value="${c3p0.pool.maxPlooSize}" name="maxPoolSize"/>-->
+        <!--&lt;!&ndash;连接池中保留的最小连接数。默认15&ndash;&gt;-->
+        <!--<property value="${c3p0.pool.minPlooSize}" name="minPoolSize"/>-->
+        <!--&lt;!&ndash;初始化时创建的连接数，在最大和最小值之间取值&ndash;&gt;-->
+        <!--<property value="${c3p0.pool.initialPlooSize}" name="initialPoolSize"/>-->
+        <!--&lt;!&ndash; 定义从数据库获取新连接失败后重复尝试获取的次数，默认30 &ndash;&gt;-->
+        <!--<property value="${c3p0.pool.acquireIncrement}" name="acquireRetryAttempts"/>-->
+    </bean>
+
+    <!--<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">-->
+    <!--<property name="dataSource" ref="dataSource"/>-->
+    <!--<property name="mapperLocations" value="classpath*:sql/*.xml"/>-->
+    <!--</bean>-->
+
+    <!--<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">-->
+    <!--<property name="basePackage" value="com.spring.dao"/>-->
+    <!--<property name="sqlSessionFactoryBeanName" value="sessionFactory"/>-->
+    <!--</bean>-->
+
+    <tx:annotation-driven transaction-manager="txManager"/><!-- a PlatformTransactionManager is still required -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- (this dependency is defined somewhere else) -->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+
+    <bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 注入数据库连接池 -->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 配置mybatis全局配置文件:SqlMapConfig.xml -->
+        <!--<property value="classpath:/SqlMapConfig.xml" name="configLocation"/>-->
+        <!-- 扫描sql配置文件：mapping需要的xml文件 -->
+        <property value="classpath*:/com/spring/mapper/*.xml" name="mapperLocations"/>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.spring.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sessionFactory"/>
+    </bean>
+
+    <!--5：事务通知-->
+    <!--<bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="txManager">-->
+    <!--<property name="dataSource" ref="dataSource"/>-->
+    <!--</bean>-->
+    <!--&lt;!&ndash;事务通知&ndash;&gt;-->
+    <!--<tx:advice id="txAdivce" transaction-manager="txManager">-->
+    <!--<tx:attributes>-->
+    <!--<tx:method name="insert*" propagation="REQUIRED"/>-->
+    <!--<tx:method name="update*" propagation="REQUIRED"/>-->
+    <!--<tx:method name="delete*" propagation="REQUIRED"/>-->
+    <!--<tx:method name="save*" propagation="REQUIRED"/>-->
+    <!--<tx:method name="find*" read-only="false"/>-->
+    <!--<tx:method name="get*" read-only="false"/>-->
+    <!--<tx:method name="view*" read-only="false"/>-->
+    <!--</tx:attributes>-->
+    <!--</tx:advice>-->
+    <!--<aop:config>-->
+    <!--<aop:pointcut id="txPointcut" expression="execution(* com.spring.service.*.*(..))"/>-->
+    <!--<aop:advisor pointcut-ref="txPointcut" advice-ref="txAdivce"/>-->
+    <!--</aop:config>-->
+</beans>

@@ -1,0 +1,53 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
+       default-autowire="byName">
+
+    <!--<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">-->
+        <!--<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>-->
+        <!--<property name="url"-->
+                  <!--value="jdbc:mysql://localhost:3306/test1"/>-->
+        <!--<property name="username" value="root"/>-->
+        <!--<property name="connectionProperties" value="clientEncoding=UTF-8"/>-->
+    <!--</bean>-->
+
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!-- 配置连接池属性 -->
+        <property value="com.mysql.cj.jdbc.Driver" name="driverClass"/>
+        <property value="jdbc:mysql://localhost:3306/test1?characterEncoding=utf-8&amp;useSSL=false&amp;serverTimezone=GMT" name="jdbcUrl"/>
+        <property value="root" name="user"/>
+        <!--<property name="password" value="${jdbc.password}"/>-->
+
+        <!-- c3p0连接池的私有属性 -->
+        <!--连接池中保留的最大连接数。默认15-->
+        <!--<property value="400" name="maxPoolSize"/>-->
+        <!--&lt;!&ndash;连接池中保留的最小连接数。默认15&ndash;&gt;-->
+        <!--<property value="50" name="minPoolSize"/>-->
+        <!--&lt;!&ndash;初始化时创建的连接数，在最大和最小值之间取值&ndash;&gt;-->
+        <!--<property value="${c3p0.pool.initialPlooSize}" name="initialPoolSize"/>-->
+        <!--&lt;!&ndash; 定义从数据库获取新连接失败后重复尝试获取的次数，默认30 &ndash;&gt;-->
+        <!--<property value="${c3p0.pool.acquireIncrement}" name="acquireRetryAttempts"/>-->
+    </bean>
+
+    <!-- enable the configuration of transactional behavior based on annotations -->
+    <tx:annotation-driven transaction-manager="txManager"/><!-- a PlatformTransactionManager is still required -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- (this dependency is defined somewhere else) -->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations" value="classpath*:sql/*.xml"/>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.spring.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <context:component-scan base-package="com.spring.service.impl"/>
+</beans>
